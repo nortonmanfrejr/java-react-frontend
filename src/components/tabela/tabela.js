@@ -13,7 +13,7 @@ import api from "../../services/api"
 function Table() {
 
     const [transferencia, setTransferencia] = useState([]);
-    const [total, setTotal] = useState(0)
+    const [total, setTotal] = useState(-1)
     const [limit, setLimit] = useState(5);
     const [pages, setPages] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -22,14 +22,16 @@ function Table() {
 
         async function loadTransferencia() {
             const response = await api.get(
-                `/transferencia/search==ocBeltrano?page=${currentPage}&limit=${limit}`
+                `/transferencia?page=${currentPage}&limit=${limit}`
             );  
 
-            console.log(transferencia.slice(currentPage - 1 * limit, limit));
+            console.log(transferencia.slice((currentPage - 1) * limit, currentPage * limit));
         
-            setTotal(response.data.length);
+            setTotal(() => {
+                return transferencia.length;
+            });
 
-            const totalPages = Math.ceil(total / limit);
+            const totalPages = Math.ceil((transferencia.length / limit) + 1);
 
             const arrayPages = [];
             for (let i = 1; i < totalPages; i++){
@@ -37,9 +39,7 @@ function Table() {
             }
         
             setPages(arrayPages);
-
             setTransferencia(response.data);
-    
         }
 
         loadTransferencia();
@@ -51,7 +51,7 @@ function Table() {
     }, []);
 
     return (
-        <Conteiner>
+        <Conteiner border='1px solid black'>
             <h4>Qntd {total}</h4>
             <PropertiesTable>
              <thead>
@@ -74,7 +74,7 @@ function Table() {
                     </tr>
                 </thead>
              <tbody>
-                   { transferencia.slice(((currentPage - 1) * limit), limit).map((t) => (  
+                   { transferencia.slice((currentPage - 1) * limit, currentPage * limit).map((t) => (  
                         <tr key={t.id}>
                             <td>{t.id}</td>
                             <td>{t.operationDate}</td>

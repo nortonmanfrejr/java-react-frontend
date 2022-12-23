@@ -18,7 +18,7 @@ export const PropertiesTable = styled.table`
     }
 
     tbody{
-        widht:50%;
+        widht:500%;
 
         tr{
             text-align:left;
@@ -46,6 +46,7 @@ export const PropertiesTable = styled.table`
 
  export const PropertiesFooterItems = styled.button`
     margin: 0 2px;
+    cursor: pointer;
 
     widht: 50px;
     height: 50px;
