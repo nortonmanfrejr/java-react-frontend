@@ -13,25 +13,32 @@ import api from "../../services/api"
 function Table() {
 
     const [transferencia, setTransferencia] = useState([]);
-    const [total, setTotal] = useState(-1)
+    const [total, setTotal] = useState(-0)
     const [limit, setLimit] = useState(5);
     const [pages, setPages] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+
+    const [transferenciaTotal, setTransferenciaTotal] = useState(0);
 
     useEffect(() => {
 
         async function loadTransferencia() {
             const response = await api.get(
-                `/transferencia?page=${currentPage}&limit=${limit}`
+                `/transferencia/ope=Beltrano?page=${currentPage}&limit=${limit}`
             );  
 
-            console.log(transferencia.slice((currentPage - 1) * limit, currentPage * limit));
-        
             setTotal(() => {
                 return transferencia.length;
             });
 
-            const totalPages = Math.ceil((transferencia.length / limit) + 1);
+            setTransferenciaTotal(() => {
+                const t = [];
+                transferencia.map((resp) => t.push(resp.valor)); 
+
+                return t.reduce((a, b) => a + b, 0);
+            });
+
+            const totalPages = Math.ceil((total / limit) + 1);
 
             const arrayPages = [];
             for (let i = 1; i < totalPages; i++){
@@ -43,7 +50,7 @@ function Table() {
         }
 
         loadTransferencia();
-    }, [currentPage, limit, total]);
+    }, [currentPage, limit, total, transferenciaTotal]);
 
     const limits = useCallback((e) => {
         setLimit(e.target.value);
@@ -51,8 +58,14 @@ function Table() {
     }, []);
 
     return (
-        <Conteiner border='1px solid black'>
-            <h4>Qntd {total}</h4>
+        <Conteiner>
+            <PropertiesFooter>
+                <PropertiesFooterItems>
+                    <h4>Valor total: R${
+                        transferenciaTotal.toFixed(2)
+                }</h4>
+                </PropertiesFooterItems>
+            </PropertiesFooter>
             <PropertiesTable>
              <thead>
                  <tr>
@@ -73,8 +86,9 @@ function Table() {
                         </th>
                     </tr>
                 </thead>
-             <tbody>
-                   { transferencia.slice((currentPage - 1) * limit, currentPage * limit).map((t) => (  
+                <tbody>
+                   { 
+                   transferencia.slice((currentPage - 1) * limit, currentPage * limit).map((t) => (  
                         <tr key={t.id}>
                             <td>{t.id}</td>
                             <td>{t.operationDate}</td>
@@ -84,11 +98,10 @@ function Table() {
                         </tr>
                     ))}
                 </tbody>
-             </PropertiesTable>
-             <PropertiesFooter>
+                </PropertiesTable>
+                <PropertiesFooter>
                     <Conteiner>
-                        <PropertiesFooter>
-                            <PropertiesFooterButton>
+                        <PropertiesFooterButton>
                                 {currentPage > 1 && (
                                     <div>
                                         <PropertiesFooterItems onClick={() => setCurrentPage(currentPage - 1)}>Previous</PropertiesFooterItems>
@@ -112,10 +125,7 @@ function Table() {
                                     </div>
                                 )}
                             </PropertiesFooterButton>
-                        </PropertiesFooter>
                     </Conteiner>
-
-                
             </PropertiesFooter>
             
         </Conteiner>
