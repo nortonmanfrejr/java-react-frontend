@@ -25,16 +25,11 @@ function Table() {
 
     const transferenciaTotal = transferencia.map(t => t.valor).reduce((prev, curr) => prev + curr, 0); // valentia total
 
-    const handleSubmitted = useCallback(() => {
-        api.get("/transferencia/search==", {
-            params: { // passando parametros de busca
-                'init': init || null,
-                'end': end || null,
-                'nomeOperador': nomeOperador || ''
-            }
+    useEffect(() => {
 
-    }).then((response) => { 
-
+        async function loadTransferencia() {
+            const response = await api.get(`/transferencia`); 
+            
             setTotal(() => {
                 return transferencia.length;
             });
@@ -45,24 +40,49 @@ function Table() {
             for (let i = 1; i < totalPages; i++){
                 arrayPages.push(i);
             }
-        
+            
             setPages(arrayPages);
             setTransferencia(response.data);
+        }
+        loadTransferencia();
+      }, [currentPage,limit,total]);
+
+      
+    const handleSubmitted = useCallback(() => {
+        api.get(`/transferencia/`, {
+            params: { // passando parametros de busca
+                'init': init || null,
+                'end': end || null,
+                'nomeOperador': nomeOperador || ''
+            }
+
+    }).then((response) => { 
             
-            Array.from(document.querySelectorAll('input')).forEach(
-                input => (input.value = '')
-            );
+        setTransferencia(response.data);
+    
+        setTotal(() => {
+            return transferencia.length;
+         });
 
-            setInitDate(null);
-            setFinDate(null);
-            setNomeOperador('');
-            }).catch(err => {console.log(err)});
-    }, [currentPage, limit, total,
-        init, end, nomeOperador]);  
+        const totalPages = Math.ceil((total / limit) + 1);
 
-    useEffect(() => {
-        handleSubmitted()
-    }, [currentPage, limit, total]);
+        const arrayPages = [];
+        for (let i = 1; i < totalPages; i++){
+            arrayPages.push(i);
+        }
+            
+        setPages(arrayPages);
+
+        Array.from(document.querySelectorAll('input')).forEach(
+            input => (input.value = '')
+        );
+        
+        setInitDate(null);
+        setFinDate(null);
+        setNomeOperador('');
+        }).catch(err => {console.log(err)});
+
+    }, [init, end, nomeOperador, transferencia]);  
 
     const limits = useCallback((e) => {
         setLimit(e.target.value);
