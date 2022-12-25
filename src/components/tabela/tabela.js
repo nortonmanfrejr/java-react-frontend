@@ -5,37 +5,38 @@ import {
     PropertiesTable, 
     PropertiesFooter, 
     PropertiesFooterButton, 
-    PropertiesFooterItems
+    PropertiesFooterItems,
+    PropertiesInput
 } from "./styles";
 
 import api from "../../services/api"
 
 function Table() {
 
-    const [transferencia, setTransferencia] = useState([]);
-    const [total, setTotal] = useState(-0)
-    const [limit, setLimit] = useState(5);
-    const [pages, setPages] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [transferencia, setTransferencia] = useState([]); // Salva o request
+    const [total, setTotal] = useState(); // Total de itens no request
+    const [limit, setLimit] = useState(5); // Limite de dados que irão aparecer na tabela
+    const [pages, setPages] = useState([]); // Total de paginas
+    const [currentPage, setCurrentPage] = useState(1); // Pagina atual
 
-    const [transferenciaTotal, setTransferenciaTotal] = useState(0);
+    const [init, setInitDate] = useState(); // data inicial
+    const [end, setFinDate] = useState(); // data final
+    const [nomeOperador, setNomeOperador] = useState(); // nome de operador
 
-    useEffect(() => {
+    const transferenciaTotal = transferencia.map(t => t.valor).reduce((prev, curr) => prev + curr, 0); // valentia total
 
-        async function loadTransferencia() {
-            const response = await api.get(
-                `/transferencia/ope=Beltrano?page=${currentPage}&limit=${limit}`
-            );  
+    const handleSubmitted = useCallback(() => {
+        api.get("/transferencia/search==", {
+            params: { // passando parametros de busca
+                'init': init || null,
+                'end': end || null,
+                'nomeOperador': nomeOperador || ''
+            }
+
+    }).then((response) => { 
 
             setTotal(() => {
                 return transferencia.length;
-            });
-
-            setTransferenciaTotal(() => {
-                const t = [];
-                transferencia.map((resp) => t.push(resp.valor)); 
-
-                return t.reduce((a, b) => a + b, 0);
             });
 
             const totalPages = Math.ceil((total / limit) + 1);
@@ -47,21 +48,86 @@ function Table() {
         
             setPages(arrayPages);
             setTransferencia(response.data);
-        }
+            
+            Array.from(document.querySelectorAll('input')).forEach(
+                input => (input.value = '')
+            );
 
-        loadTransferencia();
-    }, [currentPage, limit, total, transferenciaTotal]);
+            setInitDate(null);
+            setFinDate(null);
+            setNomeOperador('');
+            }).catch(err => {console.log(err)});
+    }, [currentPage, limit, total,
+        init, end, nomeOperador]);  
+
+    useEffect(() => {
+        handleSubmitted()
+    }, [currentPage, limit, total]);
 
     const limits = useCallback((e) => {
         setLimit(e.target.value);
         setCurrentPage(1);
     }, []);
 
+    const handleInitDate = (e) => {
+        setInitDate(e.target.value.toLocaleString('pt-BR'));
+    };
+
+    const handleFinDate = (e) => {
+        setFinDate(e.target.value.toLocaleString('pt-BR'));
+    };
+
+    const handleNomeOperador = (e) => {
+        setNomeOperador(e.target.value);
+    };
+
     return (
         <Conteiner>
             <PropertiesFooter>
+               <Conteiner>
+                <h4>Data de Inicio</h4>
+                <PropertiesInput 
+                type={'datetime-local'}
+                onChange={handleInitDate}
+                >
+                </PropertiesInput>
+            </Conteiner> 
+            <Conteiner>
+                <h4>Data de Final</h4>
+                <PropertiesInput 
+                type={'datetime-local'}
+                onChange={handleFinDate}
+                >
+                </PropertiesInput>
+            </Conteiner> 
+            <Conteiner>
+                <h4>Operador responsavel</h4>
+                <PropertiesInput
+                 type={'text'}
+                 onChange={handleNomeOperador}
+                >
+                </PropertiesInput>
+            </Conteiner>
+            </PropertiesFooter>
+            <Conteiner>
+                <PropertiesFooter>
+                    <Conteiner>
+                        <PropertiesFooterItems
+                        onClick={handleSubmitted}
+                        >   
+                        <h4>Buscar</h4>
+                        </PropertiesFooterItems>
+                   </Conteiner>
+                </PropertiesFooter>
+            </Conteiner>
+            <PropertiesFooter>
                 <PropertiesFooterItems>
-                    <h4>Valor total: R${
+                    <h4>Saldo total: R${
+                        transferenciaTotal.toFixed(2)
+                }</h4>
+                </PropertiesFooterItems>
+                <PropertiesFooterItems>
+                    <h4>Saldo no período: R${
                         transferenciaTotal.toFixed(2)
                 }</h4>
                 </PropertiesFooterItems>
@@ -69,11 +135,11 @@ function Table() {
             <PropertiesTable>
              <thead>
                  <tr>
-                    <th>#</th>
+                    <th>Nº</th>
                     <th>Data de transferencia</th>
                     <th>Valentia</th>
                     <th>Tipo</th>
-                    <th>Nome de Operador Responsavel</th>
+                    <th>Operador Responsavel</th>
                     <th>
                         <select onChange={limits}>
                             <option value='5'>5</option>

@@ -1,12 +1,13 @@
 import styled from 'styled-components';
 
 export const Conteiner = styled.div`
-  display: auto;
+  margin: 0 10px;
 `;
 
 
 export const PropertiesTable = styled.table`
     widht: 500px;
+    border: 1px solid black;
     border-collapse: collapse;
 
     th {
@@ -55,6 +56,10 @@ export const PropertiesTable = styled.table`
     border: 0px;
     background: white;
 
+    :hover {
+        border: 1px solid black;
+    }
+
     ${(props) =>
         props.isSelect && {
         border: '1px solid black',
@@ -65,3 +70,11 @@ export const PropertiesTable = styled.table`
     }
  `;
 
+ export const PropertiesInput = styled.input`
+    margin: 0 2px;
+    cursor: pointer;
+ `;
+
+ export const PropertiesSelect = styled.select`
+    
+ `;

@@ -1,7 +1,8 @@
 import React, { Component }from "react"
+
 import { Conteiner } from "./components/tabela/styles";
 
-import Table from "./components/tabela/tabela"
+import Table from "./components/tabela/tabela";
 
 
 class App extends Component {
